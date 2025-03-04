@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+/* eslint-disable no-unused-vars */
+/* eslint-disable react-hooks/exhaustive-deps */
+import { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import Api from "../Endpoints/api";
 import "../Styles/MovieCard.scss";
 import "react-toastify/dist/ReactToastify.css";
-import { useNavigate } from "react-router-dom";
 
 const MovieDetails = () => {
   const { movie_id } = useParams();
@@ -12,13 +13,8 @@ const MovieDetails = () => {
   const [isHovered, setIsHovered] = useState(false);
   const [isClicked, setIsClicked] = useState(false);
 
-  const handleMouseEnter = () => {
-    setIsHovered(true);
-  };
-
-  const handleMouseLeave = () => {
-    setIsHovered(false);
-  };
+  const handleMouseEnter = () => setIsHovered(true);
+  const handleMouseLeave = () => setIsHovered(false);
 
   useEffect(() => {
     const storedFavorites = JSON.parse(localStorage.getItem("favorites")) || [];
@@ -79,42 +75,54 @@ const MovieDetails = () => {
       });
   }, [movie_id]);
 
+  const getPosterUrl = (posterPath) => {
+    if (!posterPath) return null;
+    const trimmed = posterPath.trim();
+    if (trimmed.toLowerCase() === "null" || trimmed === "") return null;
+    const url = `https://image.tmdb.org/t/p/w185${trimmed}`;
+    return url === "https://image.tmdb.org/t/p/w185null" ? null : url;
+  };
+
+  const posterUrl = movieDetails && getPosterUrl(movieDetails.poster_path);
+
   return (
     <div>
       {movieDetails ? (
         <div data-testid="movie-card" className="whole">
-          {movieDetails.poster_path && (
-            <div>
+          <div>
+            {posterUrl ? (
               <img
-                src={`https://image.tmdb.org/t/p/w185${movieDetails.poster_path}`}
+                src={posterUrl}
                 alt={movieDetails.title}
                 className="pic"
                 data-testid="movie-posters"
               />
-              <i
-                className={`fa fa-heart icon ${isHovered ? "hovered" : ""} ${
-                  isClicked ? "clicked" : ""
-                } `}
-                alt="add movie to favorites"
-                onMouseEnter={handleMouseEnter}
-                onMouseLeave={handleMouseLeave}
-                onClick={handleClick}
-              ></i>
-              {isHovered && (
-                <span className="tooltip">
-                  {isClicked ? "Remove from Favorites" : "Add to Favorites"}
-                </span>
-              )}
-            </div>
-          )}
+            ) : (
+              <div className="image-placeholder">No Image</div>
+            )}
+            <i
+              className={`fa fa-heart icon ${isHovered ? "hovered" : ""} ${
+                isClicked ? "clicked" : ""
+              }`}
+              alt="add movie to favorites"
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+              onClick={handleClick}
+            ></i>
+            {isHovered && (
+              <span className="tooltip">
+                {isClicked ? "Remove from Favorites" : "Add to Favorites"}
+              </span>
+            )}
+          </div>
           <h2 data-testid="movie-title" className="title">
-            {movieDetails.title}
+            Title: {movieDetails.title}
           </h2>
           <p data-testid="movie-release-date" className="date">
-              {movieDetails.release_date}
+            Release Date: {movieDetails.release_date}
           </p>
           <p data-testid="movie-runtime" className="date">
-            {movieDetails.runtime}
+            Run Time: {movieDetails.runtime}
           </p>
           <p data-testid="movie-overview" className="overviews">
             {movieDetails.overview}
